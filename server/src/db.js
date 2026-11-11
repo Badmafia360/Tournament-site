@@ -2,10 +2,16 @@ import { PGlite } from '@electric-sql/pglite';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const dataDir =
+let dataDir =
   process.env.PGLITE_DIR || path.resolve(import.meta.dirname, '../data/pgdata');
 
-fs.mkdirSync(path.dirname(dataDir), { recursive: true });
+try {
+  fs.mkdirSync(dataDir, { recursive: true });
+} catch {
+  // Read-only filesystem (e.g. serverless hosts) — use /tmp instead.
+  dataDir = '/tmp/pgdata';
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
 export const db = new PGlite(dataDir);
 

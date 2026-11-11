@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index?p=:path*" },
+    { "source": "/uploads/:path*", "destination": "/api/index?u=:path*" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}

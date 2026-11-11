@@ -3,10 +3,16 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 /** Directory where profile photos are stored (override with UPLOAD_DIR). */
-export const AVATARS_DIR =
+export let AVATARS_DIR =
   process.env.UPLOAD_DIR || path.resolve(import.meta.dirname, '../uploads/avatars');
 
-fs.mkdirSync(AVATARS_DIR, { recursive: true });
+try {
+  fs.mkdirSync(AVATARS_DIR, { recursive: true });
+} catch {
+  // Read-only filesystem (e.g. serverless hosts) — use /tmp instead.
+  AVATARS_DIR = '/tmp/avatars';
+  fs.mkdirSync(AVATARS_DIR, { recursive: true });
+}
 
 const EXTENSIONS = {
   'image/jpeg': 'jpg',

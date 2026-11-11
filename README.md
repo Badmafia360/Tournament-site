@@ -18,7 +18,7 @@ live battle royale with results already on the board.
 | Database   | PGlite (Postgres compiled to WASM) — zero-install locally     |
 | Auth       | Email/password, scrypt hashing, JWT bearer tokens             |
 | Realtime   | Polling (public pages refresh every 12–30s)                   |
-| Deployment | Single Node server that also serves the built frontend        |
+| Deployment | Vercel project with two services (client + server), or a single Node server that also serves the built frontend |
 
 PGlite gives us real PostgreSQL semantics (SERIAL, `FILTER`, JSON, transactions, partial
 indexes) without requiring a database server, which makes the MVP easy to run on any
@@ -53,6 +53,27 @@ npm start
 
 The Express server serves `client/dist` on the same origin (default port 4000), so the
 whole app runs from one process.
+
+### Deploying to Vercel
+
+`vercel.json` at the repo root configures **services mode**: one Vercel project made of
+two independently built services.
+
+| Service   | Directory | Public paths                       |
+| --------- | --------- | ---------------------------------- |
+| `client`  | `client`  | everything not matched below (SPA) |
+| `server`  | `server`  | `/api/*` and `/uploads/*`          |
+
+- Each service installs and builds from its own directory (`vite build` → `dist` for the
+  client, no build step for the Express server).
+- The browser talks to the API with same-origin relative URLs (`/api/...`,
+  `/uploads/avatars/...`), so **no service-to-service bindings are needed** — nothing
+  calls another service at runtime.
+- `JWT_SECRET` (and optionally `CLIENT_ORIGIN`) must be set in the project's
+  environment variables.
+- Note: profile photos are written to `/tmp` on Vercel and are lost between deploys;
+  PGlite's data directory is likewise ephemeral. Point `UPLOAD_DIR` / `PGLITE_DIR` at a
+  durable store (or move to managed Postgres + object storage) before real use.
 
 ### Environment variables
 
